@@ -2,6 +2,10 @@
 
 
 #include "PlayerCharacter.h"
+#include "FPSController.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
 #include "Camera/CameraComponent.h"
 
 // Sets default values
@@ -45,6 +49,28 @@ void APlayerCharacter::BeginPlay()
 	
 }
 
+void APlayerCharacter::PossessedBy(AController* NewController)
+{
+	// 원래 C++에는 부모를 부르는 말이 없고, 부모를 이름으로 불러야 했으나
+	// 빙의해야 할 때 할 일은 그대로
+	Super::PossessedBy(NewController);
+
+	// 향상된 입력을 쓰고 싶을 때 필수조건
+	// 입력 액션을 불러올 수 있는 상태 : 컨트롤러가 "플레이어" 이어야 함
+	// Dynamic_Cast : 그 클래스가 맞으면 그 클래스로 보여주고, 아니면 null을 돌려줌
+	// 언리얼에서는 Cast라고 하면 Dynamic_Cast가 나간다.
+	// asPlayer를 if문에서 생성해서, if문의 지역변수! -> &&나 ||과 함께 쓰기 불가능
+	// Cast하면 대상의 주소 or nullptr (0) => 0은  false, 0이외 true
+	if (AFPSController* asPlayer = Cast<AFPSController>(NewController))
+	{
+		// 플레이어 컨트롤러에는 보조시스템들이 있는데, EnhancedInput 보조 시스템을 등록해보자
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(asPlayer->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(asPlayer->DefaultContext, 0);
+		}
+	}
+}
+
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
@@ -57,5 +83,97 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	// 새 컨트롤러 소환
+	if (AFPSController* asFPSController = Cast<AFPSController>(Controller))
+	{
+		// InputComponent 하위에 EnhancedInputComponent가 있다.
+		if (UEnhancedInputComponent* asEnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+		{
+			//															ETriggerEvent
+			//															Start :누른순간
+			//															Ongoing : 눌리긴 했는데 아직 발동 안됨
+			//															Triggered : 발동 됨
+			//															Canceled : 트리거 되기 전에 뗌
+			//															Completed : 트리거 된 후에 뗌
+			asEnhancedInputComponent->BindAction(asFPSController->IA_Look, ETriggerEvent::Triggered, this, &APlayerCharacter::OnLook);
+			asEnhancedInputComponent->BindAction(asFPSController->IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter::OnMove);
+			asEnhancedInputComponent->BindAction(asFPSController->IA_Run, ETriggerEvent::Started, this, &APlayerCharacter::OnRun);
+			asEnhancedInputComponent->BindAction(asFPSController->IA_Run, ETriggerEvent::Completed, this, &APlayerCharacter::OnRun);
+			asEnhancedInputComponent->BindAction(asFPSController->IA_Jump, ETriggerEvent::Started, this, &APlayerCharacter::OnJump);
+			asEnhancedInputComponent->BindAction(asFPSController->IA_Jump, ETriggerEvent::Completed, this, &APlayerCharacter::StopJumping);
+			asEnhancedInputComponent->BindAction(asFPSController->IA_Shot, ETriggerEvent::Started, this, &APlayerCharacter::OnShot);
+			asEnhancedInputComponent->BindAction(asFPSController->IA_Reload, ETriggerEvent::Triggered, this, &APlayerCharacter::OnReload);
+			asEnhancedInputComponent->BindAction(asFPSController->IA_MainWeapon, ETriggerEvent::Triggered, this, &APlayerCharacter::OnMainWeapon);
+			asEnhancedInputComponent->BindAction(asFPSController->IA_SubWeapon, ETriggerEvent::Triggered, this, &APlayerCharacter::OnSubWeapon);
+			asEnhancedInputComponent->BindAction(asFPSController->IA_Interaction, ETriggerEvent::Triggered, this, &APlayerCharacter::OnInteraction);
+		}
+	}
+
 }
+void APlayerCharacter::OnLook(const FInputActionValue& Value)
+{
+
+}
+
+void APlayerCharacter::OnMove(const FInputActionValue& Value)
+{
+	FVector2D InputVector  = Value.Get<FVector2D>();
+	
+	// inputVector의 x축이 1이라면 -> 오른쪽
+	// x축은 전후
+	// y축은 좌우
+	// 내 캐릭터의 전후좌우를 봐야하니까 회전을 본다
+	FRotator MyRotate = GetActorRotation();
+
+	// 회전값을 4x4행렬로 변환
+	FRotationMatrix44d MyMatrix = FRotationMatrix(MyRotate);
+
+	FVector RightVector = MyMatrix.GetScaledAxis(EAxis::Y);
+	FVector ForwardVector = MyMatrix.GetScaledAxis(EAxis::X);
+
+	// GEngine->AddOnScreenDebugMessage = Debug.Log
+	// key : 식별번호, 같은 key에 들어있는 메세지를 지우고 덮어씌움, -1이면 덮어씌워지지 않음
+	GEngine->AddOnScreenDebugMessage(3, 3.0f, FColor::Black, FString::Printf(TEXT("F.X : %f"), ForwardVector.X));
+	GEngine->AddOnScreenDebugMessage(4, 3.0f, FColor::Black, FString::Printf(TEXT("F.Y : %f"), ForwardVector.Y));
+	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Black, FString::Printf(TEXT("R.X : %f"), RightVector.X));
+	GEngine->AddOnScreenDebugMessage(2, 3.0f, FColor::Black, FString::Printf(TEXT("R.Y : %f"), RightVector.Y));
+
+	AddMovementInput(RightVector * InputVector.X + ForwardVector * InputVector.Y);
+}
+
+void APlayerCharacter::OnRun(const FInputActionValue& Value)
+{
+
+}
+
+void APlayerCharacter::OnJump()
+{
+	Jump();
+}
+
+void APlayerCharacter::OnShot()
+{
+
+}
+
+void APlayerCharacter::OnReload()
+{
+
+}
+
+void APlayerCharacter::OnMainWeapon()
+{
+
+}
+
+void APlayerCharacter::OnSubWeapon()
+{
+
+}
+
+void APlayerCharacter::OnInteraction()
+{
+
+}
+
 

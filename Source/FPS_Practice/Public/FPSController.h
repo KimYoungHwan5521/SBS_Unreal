@@ -14,8 +14,13 @@ UCLASS()
 class FPS_PRACTICE_API AFPSController : public APlayerController
 {
 	GENERATED_BODY()
+
+public:
+	void BeginPlay() override;
+	void SetupInputComponent() override;
 	
-protected:
+	// 캐릭터마다 매핑을 넣어주고 protected로 쓰자!
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputMappingContext> DefaultContext;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = "true"))

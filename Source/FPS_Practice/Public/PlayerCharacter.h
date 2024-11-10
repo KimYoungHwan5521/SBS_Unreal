@@ -24,6 +24,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void PossessedBy(AController* NewController) override;
 
 public:	
 	// Called every frame
@@ -31,5 +32,25 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+protected:
+	UFUNCTION()
+	virtual void OnLook(const FInputActionValue& Value);
+	UFUNCTION()
+	virtual void OnMove(const FInputActionValue& Value);
+	UFUNCTION()
+	virtual void OnRun(const FInputActionValue& Value);
+	UFUNCTION()
+	virtual void OnJump();
+	UFUNCTION()
+	virtual void OnShot();
+	UFUNCTION()
+	virtual void OnReload();
+	UFUNCTION()
+	virtual void OnMainWeapon();
+	UFUNCTION()
+	virtual void OnSubWeapon();
+	UFUNCTION()
+	virtual void OnInteraction();
 
 };
