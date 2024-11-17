@@ -3,6 +3,10 @@
 
 #include "PlayerCharacter.h"
 #include "FPSController.h"
+#include "WeaponComponent.h"
+#include "MainWeaponComponent.h"
+#include "SubWeaponComponent.h"
+
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -112,7 +116,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 }
 void APlayerCharacter::OnLook(const FInputActionValue& Value)
 {
-
+	FVector2D InputVector = Value.Get<FVector2D>();
+	
+	// µµ¸® : Yaw
+	// ²ô´ö : Pitch
+	// °¼¿ô : Roll
+	AddControllerYawInput(InputVector.X);
+	AddControllerPitchInput(InputVector.Y);
 }
 
 void APlayerCharacter::OnMove(const FInputActionValue& Value)
@@ -163,12 +173,25 @@ void APlayerCharacter::OnReload()
 
 void APlayerCharacter::OnMainWeapon()
 {
-
+	if (CurrentWeapon != MainWeapon)
+	{
+		GEngine->AddOnScreenDebugMessage(4, 3.0f, FColor::Black, FString::Printf(TEXT("Hi")));
+		CurrentWeapon->Holstering();
+		CurrentWeapon = MainWeapon;
+		CurrentWeapon->Draw();
+	}
 }
 
 void APlayerCharacter::OnSubWeapon()
 {
 
+	if (CurrentWeapon != SubWeapon)
+	{
+		GEngine->AddOnScreenDebugMessage(4, 3.0f, FColor::Black, FString::Printf(TEXT("Hi")));
+		CurrentWeapon->Holstering();
+		CurrentWeapon = SubWeapon;
+		CurrentWeapon->Draw();
+	}
 }
 
 void APlayerCharacter::OnInteraction()

@@ -17,6 +17,20 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess = "true"))
  	TObjectPtr<class UCameraComponent> MainCamera;
 
+	// StaticMeshComponent -> 뼈대가 없음 -> 중앙선이 민트색
+	// SkeletalMeshComponent -> 뼈대가 있음 -> 중앙선이 핑크색
+	// 이 두 개를 사용할 수 있게 -> UPrimitiveComponent : 실제 세상에서 메시를 렌더하는 컴포넌트
+	// "무기"라는 시스템의 커스텀 컴포넌트 만들기!
+	// 무기의 기본값을 통해서 세팅값을 무기마다 설정할 수 있음. -> 함수도 오버라이딩 해서 쓰면
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UWeaponComponent> MainWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UWeaponComponent> SubWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UWeaponComponent> CurrentWeapon;
+
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
