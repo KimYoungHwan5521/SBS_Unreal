@@ -15,8 +15,18 @@ class FPS_PRACTICE_API USubWeaponComponent : public UWeaponComponent
 	GENERATED_BODY()
 
 protected:
+	// 모양을 렌더링 해줄 기능
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UStaticMeshComponent> Mesh;
+
+	// 등록할 모양
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMesh> WeaponMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	FTransform WeaponTransform;
+protected:
+	virtual void BeginPlay() override;
 
 
 

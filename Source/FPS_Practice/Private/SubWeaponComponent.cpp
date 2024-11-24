@@ -3,6 +3,24 @@
 
 #include "SubWeaponComponent.h"
 
+void USubWeaponComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (Mesh = NewObject<UStaticMeshComponent>(this))
+	{
+		Mesh->RegisterComponent();
+
+		Mesh->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+		Mesh->SetRelativeTransform(WeaponTransform, false, nullptr, ETeleportType::TeleportPhysics);
+
+		if (Mesh->SetStaticMesh(WeaponMesh))
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"Weapon Mesh Compile");
+		}
+
+	}
+}
 
 void USubWeaponComponent::Holstering_Implementation()
 {
