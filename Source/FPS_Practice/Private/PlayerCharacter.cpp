@@ -50,6 +50,9 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CurrentWeapon = MainWeapon = GetComponentByClass<UWeaponComponent>();
+	//SubWeapon = GetComponentByClass<UWeaponComponent>();
 	
 }
 
@@ -73,6 +76,46 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 			Subsystem->AddMappingContext(asPlayer->DefaultContext, 0);
 		}
 	}
+}
+
+void APlayerCharacter::EndHolsterAnim(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+	if (CurrentWeapon != nullptr)
+	{
+		CurrentWeapon->Draw();
+		PlayAnimMontage(CurrentWeapon->DrawMontage);
+		if (USkeletalMeshComponent* CharacterMesh = GetMesh())
+		{
+			// AnimInstance : 실제로 이 메시가 애니메이션을 진행할 수 있게 도와주는 인스턴스
+			if (UAnimInstance* Anim = CharacterMesh->GetAnimInstance())
+			{
+				// C#의 delegate처럼
+				// 전에 넣어둔 모든 함수를 제거하고
+				Anim->OnPlayMontageNotifyBegin.RemoveAll(this);
+				// 노티파이가 발생했을 때 어떤 함수로 호출 해줄까
+				//										누구의 어떤함수?
+				Anim->OnPlayMontageNotifyBegin.AddDynamic(this, &APlayerCharacter::OnDrawNotify);
+
+				Anim->OnMontageEnded.RemoveAll(this);
+				Anim->OnMontageEnded.AddDynamic(this, &APlayerCharacter::EndDrawAnim);
+			}
+		}
+	}
+}
+
+void APlayerCharacter::OnHolsterNotify(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointNotifyPayload)
+{
+
+}
+
+void APlayerCharacter::EndDrawAnim(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+
+}
+
+void APlayerCharacter::OnDrawNotify(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointNotifyPayload)
+{
+
 }
 
 // Called every frame
@@ -173,25 +216,12 @@ void APlayerCharacter::OnReload()
 
 void APlayerCharacter::OnMainWeapon()
 {
-	if (CurrentWeapon != MainWeapon)
-	{
-		GEngine->AddOnScreenDebugMessage(4, 3.0f, FColor::Black, FString::Printf(TEXT("Hi")));
-		CurrentWeapon->Holstering();
-		CurrentWeapon = MainWeapon;
-		CurrentWeapon->Draw();
-	}
+	ChangeWeapon(MainWeapon);
 }
 
 void APlayerCharacter::OnSubWeapon()
 {
-
-	if (CurrentWeapon != SubWeapon)
-	{
-		GEngine->AddOnScreenDebugMessage(4, 3.0f, FColor::Black, FString::Printf(TEXT("Hi")));
-		CurrentWeapon->Holstering();
-		CurrentWeapon = SubWeapon;
-		CurrentWeapon->Draw();
-	}
+	ChangeWeapon(SubWeapon);
 }
 
 void APlayerCharacter::OnInteraction()
@@ -199,4 +229,34 @@ void APlayerCharacter::OnInteraction()
 
 }
 
+bool APlayerCharacter::ChangeWeapon_Implementation(UWeaponComponent* newWeapon)
+{
+	if (CurrentWeapon != newWeapon)
+	{
+		if (CurrentWeapon != nullptr)
+		{
+			CurrentWeapon->Holstering();
+			PlayAnimMontage(CurrentWeapon->HolsterMontage);
+			if (USkeletalMeshComponent* CharacterMesh = GetMesh())
+			{
+				// AnimInstance : 실제로 이 메시가 애니메이션을 진행할 수 있게 도와주는 인스턴스
+				if (UAnimInstance* Anim = CharacterMesh->GetAnimInstance())
+				{
+					// C#의 delegate처럼
+					// 전에 넣어둔 모든 함수를 제거하고
+					Anim->OnPlayMontageNotifyBegin.RemoveAll(this);
+					// 노티파이가 발생했을 때 어떤 함수로 호출 해줄까
+					//										누구의 어떤함수?
+					Anim->OnPlayMontageNotifyBegin.AddDynamic(this, &APlayerCharacter::OnHolsterNotify);
+
+					Anim->OnMontageEnded.RemoveAll(this);
+					Anim->OnMontageEnded.AddDynamic(this, &APlayerCharacter::EndHolsterAnim);
+				}
+			}
+		}
+		CurrentWeapon = newWeapon;
+		return true;
+	}
+	return false;
+}
 

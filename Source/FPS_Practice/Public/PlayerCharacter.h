@@ -40,6 +40,19 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;
 
+	UFUNCTION()
+	virtual void EndHolsterAnim(UAnimMontage* AnimMontage, bool bInterrupted);
+	// 애니메이션 몽타주 진행중에 특정 타이밍이 오는 경우
+	// ex : 재장전 모션중에 재장전이 완료되는 타이밍
+	//					  FName : 언리얼에서 대상을 검색하는 용도로 사용하는 문자열
+	UFUNCTION()
+	virtual void OnHolsterNotify(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointNotifyPayload);
+
+	UFUNCTION()
+	virtual void EndDrawAnim(UAnimMontage* AnimMontage, bool bInterrupted);
+	UFUNCTION()
+	virtual void OnDrawNotify(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointNotifyPayload);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -66,5 +79,12 @@ protected:
 	virtual void OnSubWeapon();
 	UFUNCTION()
 	virtual void OnInteraction();
+
+public:
+	//		  블프에서 호출가능, 블프에서 오버라이드 가능
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, category = "Weapon")
+	bool ChangeWeapon(class UWeaponComponent* newWeapon);
+	//						_Implementation : 블프에서 오버라이드 하지 않으면 이 함수 실행
+	virtual bool ChangeWeapon_Implementation(class UWeaponComponent* newWeapon);
 
 };
