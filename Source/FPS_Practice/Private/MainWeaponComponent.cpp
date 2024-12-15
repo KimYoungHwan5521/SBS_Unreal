@@ -17,6 +17,8 @@ void UMainWeaponComponent::BeginPlay()
 		// 등록하기
 		Mesh->RegisterComponent();
 
+		Mesh->SetHiddenInGame(true);
+
 		Mesh->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
 		// 액터의 위치를 옮기는 것		SetActorLocation
@@ -42,8 +44,8 @@ void UMainWeaponComponent::Holstering_Implementation()
 
 void UMainWeaponComponent::Draw_Implementation()
 {
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Black, FString::Printf(TEXT("MDraw")));
 
+	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Black, FString::Printf(TEXT("MDraw")));
 }
 
 void UMainWeaponComponent::Reload_Implementation()
@@ -56,4 +58,9 @@ void UMainWeaponComponent::Shot_Implementation(FVector ShotLocation)
 {
 	GEngine->AddOnScreenDebugMessage(3, 3.0f, FColor::Black, FString::Printf(TEXT("MShot")));
 
+}
+
+void UMainWeaponComponent::Hidden_Implementation(bool bIsHidden)
+{
+	Mesh->SetHiddenInGame(bIsHidden);
 }

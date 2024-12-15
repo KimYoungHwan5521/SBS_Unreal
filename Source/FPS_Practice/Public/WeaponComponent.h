@@ -60,4 +60,7 @@ public:
 	void Shot(FVector ShotLocation);
 	virtual void Shot_Implementation(FVector ShotLocation);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Weapon")
+	void Hidden(bool bIsHidden);
+	virtual void Hidden_Implementation(bool bIsHidden) {};
 };

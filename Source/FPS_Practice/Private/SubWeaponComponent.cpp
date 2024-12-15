@@ -10,6 +10,7 @@ void USubWeaponComponent::BeginPlay()
 	if (Mesh = NewObject<UStaticMeshComponent>(this))
 	{
 		Mesh->RegisterComponent();
+		Mesh->SetHiddenInGame(true);
 
 		Mesh->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
 		Mesh->SetRelativeTransform(WeaponTransform, false, nullptr, ETeleportType::TeleportPhysics);
@@ -29,6 +30,7 @@ void USubWeaponComponent::Holstering_Implementation()
 
 void USubWeaponComponent::Draw_Implementation()
 {
+	Hidden(false);
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Black, FString::Printf(TEXT("SDraw")));
 }
 

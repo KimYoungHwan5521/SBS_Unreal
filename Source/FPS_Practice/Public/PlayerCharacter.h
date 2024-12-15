@@ -29,7 +29,10 @@ private:
 	TObjectPtr<class UWeaponComponent> SubWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"));
-	TObjectPtr<class UWeaponComponent> CurrentWeapon;
+	TObjectPtr<class UWeaponComponent> CurrentWeapon = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UWeaponComponent> OldWeapon = nullptr;
 
 public:
 	// Sets default values for this character's properties
