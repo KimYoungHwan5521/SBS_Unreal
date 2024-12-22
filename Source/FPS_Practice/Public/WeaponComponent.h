@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "WeaponComponent.generated.h"
 
 
@@ -13,6 +14,12 @@ class FPS_PRACTICE_API UWeaponComponent : public USceneComponent
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Offset")
+	FVector MuzzleOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UNiagaraSystem* TestEffects;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<UAnimMontage> DrawMontage;
 

@@ -214,7 +214,15 @@ void APlayerCharacter::OnJump()
 
 void APlayerCharacter::OnShot()
 {
+	FVector EyeLocation = MainCamera->GetComponentLocation();
+	FRotator EyeRotation = MainCamera->GetComponentRotation();
+	FVector EyeDirection = EyeRotation.Vector();
 
+	FVector TargetLocation = EyeLocation + EyeDirection * 1000;
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Shot(TargetLocation);
+	}
 }
 
 void APlayerCharacter::OnReload()

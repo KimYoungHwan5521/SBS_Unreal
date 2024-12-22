@@ -56,8 +56,11 @@ void UMainWeaponComponent::Reload_Implementation()
 
 void UMainWeaponComponent::Shot_Implementation(FVector ShotLocation)
 {
+	// in CPP -> 부모를 이름으로 부름
+	// UWeaponComponent::Shot(ShotLocation);
+	// in Unreal -> 부모를 Super라고 부름
+	Super::Shot_Implementation(ShotLocation);
 	GEngine->AddOnScreenDebugMessage(3, 3.0f, FColor::Black, FString::Printf(TEXT("MShot")));
-
 }
 
 void UMainWeaponComponent::Hidden_Implementation(bool bIsHidden)
