@@ -21,6 +21,9 @@ public:
 	UNiagaraSystem* TestEffects;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UNiagaraSystem* CharacterHitEffects;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<UAnimMontage> DrawMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")

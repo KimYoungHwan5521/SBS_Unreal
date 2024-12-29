@@ -218,7 +218,7 @@ void APlayerCharacter::OnShot()
 	FRotator EyeRotation = MainCamera->GetComponentRotation();
 	FVector EyeDirection = EyeRotation.Vector();
 
-	FVector TargetLocation = EyeLocation + EyeDirection * 1000;
+	FVector TargetLocation = EyeLocation + EyeDirection * 50000.0f;
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->Shot(TargetLocation);
