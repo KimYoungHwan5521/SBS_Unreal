@@ -10,6 +10,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+
+#include "Engine/DamageEvents.h"
+
 #include "Camera/CameraComponent.h"
 
 // Sets default values
@@ -63,6 +66,8 @@ void APlayerCharacter::BeginPlay()
 	
 }
 
+// 서버에서 해당 캐릭터에 새로운 컨트롤러를 부여했을 때
+// 클라이언트에서는 실행x
 void APlayerCharacter::PossessedBy(AController* NewController)
 {
 	// 원래 C++에는 부모를 부르는 말이 없고, 부모를 이름으로 불러야 했으나
@@ -282,3 +287,14 @@ bool APlayerCharacter::ChangeWeapon_Implementation(UWeaponComponent* newWeapon)
 	return false;
 }
 
+float APlayerCharacter::InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent, class AController* EventInstigator, AActor* DamageCauser)
+{
+	float result = Super::InternalTakePointDamage(Damage, PointDamageEvent, EventInstigator, DamageCauser);
+
+	if (PointDamageEvent.HitInfo.BoneName == TEXT("HEAD")) Damage *= 2;
+
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Damage : %f"), Damage));
+	
+
+	return result;
+}

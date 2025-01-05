@@ -18,6 +18,7 @@ class FPS_PRACTICE_API AFPSController : public APlayerController
 public:
 	void BeginPlay() override;
 	void SetupInputComponent() override;
+	virtual void SetPawn(APawn* InPawn) override;
 	
 	// 캐릭터마다 매핑을 넣어주고 protected로 쓰자!
 public:

@@ -9,16 +9,23 @@
 /**
  * 
  */
+class UNiagaraSystem;
+
 UCLASS()
 class FPS_PRACTICE_API UMyGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 	
 protected:
-	static class UNiagaraSystem* FleshHitEffect;
-	static class UNiagaraSystem* GroundHitEffect;
+	static UNiagaraSystem* FleshHitEffect;
+	static UNiagaraSystem* GroundHitEffect;
 
 public:
 	UMyGameInstance();
-	~UMyGameInstance();
+	//~UMyGameInstance();
+
+public:
+	inline static UNiagaraSystem* GetFleshHitEffect() { return FleshHitEffect; }
+	inline static UNiagaraSystem* GetGroundHitEffect() { return GroundHitEffect; }
+
 };

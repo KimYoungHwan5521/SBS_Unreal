@@ -90,4 +90,6 @@ public:
 	//						_Implementation : 블프에서 오버라이드 하지 않으면 이 함수 실행
 	virtual bool ChangeWeapon_Implementation(class UWeaponComponent* newWeapon);
 
+protected:
+	virtual float InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 };
