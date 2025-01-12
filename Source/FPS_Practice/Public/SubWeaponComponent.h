@@ -34,5 +34,5 @@ public:
 	virtual void Holstering_Implementation() override;
 	virtual void Draw_Implementation() override;
 	virtual void Reload_Implementation() override;
-	virtual void Shot_Implementation(FVector ShotLocation) override;
+	virtual void Shot_Implementation(FVector CameraLocation, FVector ShotLocation) override;
 };

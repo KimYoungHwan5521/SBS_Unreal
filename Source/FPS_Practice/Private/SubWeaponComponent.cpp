@@ -39,7 +39,7 @@ void USubWeaponComponent::Reload_Implementation()
 	GEngine->AddOnScreenDebugMessage(2, 3.0f, FColor::Black, FString::Printf(TEXT("SReload")));
 }
 
-void USubWeaponComponent::Shot_Implementation(FVector ShotLocation)
+void USubWeaponComponent::Shot_Implementation(FVector CameraLocation, FVector ShotLocation)
 {
 	GEngine->AddOnScreenDebugMessage(3, 3.0f, FColor::Black, FString::Printf(TEXT("SShot")));
 }

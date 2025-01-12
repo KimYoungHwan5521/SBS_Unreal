@@ -34,6 +34,14 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"));
 	TObjectPtr<class UWeaponComponent> OldWeapon = nullptr;
 
+protected:
+	// 변수를 리플리케이트 받을 수 있는 함수를 준비
+	//										언리얼에서는 배열 <> 이렇게(리스트)
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps ) const override;
+	// 모두가 똑같은 값을 복제해서 사용하는 멀티플레이어 용도의 변수
+	UPROPERTY(Replicated)
+	FVector LastReplicatedMoveDirection;
+
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
@@ -84,6 +92,19 @@ protected:
 	virtual void OnInteraction();
 
 public:
+	// 네트워크를 타고 가는 함수는 반환 값이 없어야 함
+	// Server, Client, NetMulticast
+	// NetMulticast
+	// Server에서 실행한 경우 : 모두가 알게 됨
+	// Client에서 실행한 경우 : 본인만 앎
+	// 
+	// Reliable : 신뢰할 수 있는
+	// TCP : Transmission Control Protocol 전송 제어 프로토콜
+	// UnReliable : 신뢰할 수 없는
+	UFUNCTION(Server, Unreliable, Category = "Weapon")
+	void TriggerWeapon(FVector CameraLocation, FVector ShotLocation);
+	virtual void TriggerWeapon_Implementation(FVector CameraLocation, FVector ShotLocation);
+
 	//		  블프에서 호출가능, 블프에서 오버라이드 가능
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, category = "Weapon")
 	bool ChangeWeapon(class UWeaponComponent* newWeapon);

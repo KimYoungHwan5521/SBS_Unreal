@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "Net/UnrealNetwork.h"
 
 #include "Engine/DamageEvents.h"
 
@@ -49,6 +50,28 @@ APlayerCharacter::APlayerCharacter()
 
 }
 
+void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// 복제라는 것은 기준이 다양하다.
+	// 일단 복제를 해보죠
+	//						이 클래스의,		이 변수를,					이 기준으로
+	// COND
+	//		_InitialOnly		: 처음 한 번만 정보를 받기
+	//		_OwnerOnly			: 이 액터의 Owner 한테만
+	//		_SkipOwner			: Owner 빼고 나머지 한테만
+	//		_SimulatedOnly		: 시뮬레이션 용 액터
+	//		_AutonomousOnly		: 자율 액터
+	//		_SimulatedOrPhysics	: 시뮬레이션 용 또는 물리 객체
+	//		_InitialOrOwner		: 처음 한 번, Owner는 계속
+	//		_Custom				: SetCustomActiveOverride 이거를 키거나 끄면서 조절
+	DOREPLIFETIME_CONDITION(APlayerCharacter, LastReplicatedMoveDirection, COND_OwnerOnly);
+	
+	// 조건 없이도 가능
+	// DOREPLIFETIME(APlayerCharacter, LastReplicatedMoveDirection);
+}
+
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
@@ -56,6 +79,10 @@ void APlayerCharacter::BeginPlay()
 
 	//CurrentWeapon = MainWeapon = GetComponentByClass<UWeaponComponent>();
 	MainWeapon = FindComponentByTag<UWeaponComponent>(TEXT("MainWeapon"));
+	/*if (IsValid(MainWeapon))
+	{
+		MainWeapon->SetIsReplicated(true);
+	}*/
 	SubWeapon = FindComponentByTag<UWeaponComponent>(TEXT("SubWeapon"));
 
 	ChangeWeapon(MainWeapon);
@@ -224,10 +251,7 @@ void APlayerCharacter::OnShot()
 	FVector EyeDirection = EyeRotation.Vector();
 
 	FVector TargetLocation = EyeLocation + EyeDirection * 50000.0f;
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->Shot(TargetLocation);
-	}
+	TriggerWeapon(EyeLocation, TargetLocation);
 }
 
 void APlayerCharacter::OnReload()
@@ -247,6 +271,15 @@ void APlayerCharacter::OnSubWeapon()
 
 void APlayerCharacter::OnInteraction()
 {
+
+}
+
+void APlayerCharacter::TriggerWeapon_Implementation(FVector CameraLocation, FVector ShotLocation)
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Shot(CameraLocation, ShotLocation);
+	}
 
 }
 

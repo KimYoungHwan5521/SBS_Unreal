@@ -55,7 +55,7 @@ void UWeaponComponent::Reload_Implementation()
 
 }
 
-void UWeaponComponent::Shot_Implementation(FVector ShotLocation)
+void UWeaponComponent::Shot_Implementation(FVector CameraLocation, FVector ShotLocation)
 {
 	// LineTrace
 	// 유니티의 RayCast
@@ -72,7 +72,7 @@ void UWeaponComponent::Shot_Implementation(FVector ShotLocation)
 
 	// Owner의 개념 : 내가 네트워크 게임에서 이 오브젝트를 다룰 수 있는 소유권을 가지고 있는가?
 
-	if (GetWorld()->LineTraceSingleByChannel(Hit, GetComponentLocation() + MuzzleOffset, ShotLocation, ECollisionChannel::ECC_Visibility, ShotQueryParams))
+	if (GetWorld()->LineTraceSingleByChannel(Hit, CameraLocation, ShotLocation, ECollisionChannel::ECC_Visibility, ShotQueryParams))
 	{
 		//Hit.GetActor()->TakeDamage();
 		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, AActor::GetDebugName(Hit.GetActor()));
@@ -94,26 +94,31 @@ void UWeaponComponent::Shot_Implementation(FVector ShotLocation)
 			AsActor->TakeDamage(30, DamageEvent, Instigator, GetOwner());
 		}
 
-		UNiagaraSystem* HitEffect;
+		UNiagaraSystem* WantHitEffect;
 		// 맞은 대상이 캐릭터면 FleshHitEffect, 아니면 GroundHitEffect
 		if (ACharacter* AsCharacter = Cast<ACharacter>(Hit.GetActor()))
 		{
-			HitEffect = UMyGameInstance::GetFleshHitEffect();
+			WantHitEffect = UMyGameInstance::GetFleshHitEffect();
 		}
 		else
 		{
-			HitEffect = UMyGameInstance::GetGroundHitEffect();
+			WantHitEffect = UMyGameInstance::GetGroundHitEffect();
 		}
 
-		if (IsValid(HitEffect))
-		{
-			//나이아가라 시스템 만들기
-			//																						FindLookAtRotation : 월드에 존재하는 사물을 바라봄
-			//																											(0, 0, 0)에 있는 것을 보자
-			//																						FindRelativeLookAtRotation : 탄젠트 방향을 나타내는 벡터
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitEffect, Hit.Location, UKismetMathLibrary::FindLookAtRotation(FVector::ZeroVector, Hit.Normal));
-		}
+		HitEffect(WantHitEffect, Hit);
 
 	}
 	
+}
+
+void UWeaponComponent::HitEffect_Implementation(UNiagaraSystem * WantEffect, FHitResult Hit)
+{
+	if (IsValid(WantEffect))
+	{
+		//나이아가라 시스템 만들기
+		//																						FindLookAtRotation : 월드에 존재하는 사물을 바라봄
+		//																											(0, 0, 0)에 있는 것을 보자
+		//																						FindRelativeLookAtRotation : 탄젠트 방향을 나타내는 벡터
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), WantEffect, Hit.Location, UKismetMathLibrary::FindLookAtRotation(FVector::ZeroVector, Hit.Normal));
+	}
 }

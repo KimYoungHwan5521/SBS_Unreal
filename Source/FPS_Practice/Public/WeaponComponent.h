@@ -67,10 +67,14 @@ public:
 	virtual void Reload_Implementation();
 		
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Weapon")
-	void Shot(FVector ShotLocation);
-	virtual void Shot_Implementation(FVector ShotLocation);
+	void Shot(FVector CameraLocation, FVector ShotLocation);
+	virtual void Shot_Implementation(FVector CameraLocation, FVector ShotLocation);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Weapon")
 	void Hidden(bool bIsHidden);
 	virtual void Hidden_Implementation(bool bIsHidden) {};
+
+	UFUNCTION(NetMulticast, Unreliable, Category = "Effect")
+	void HitEffect(class UNiagaraSystem* WantEffect, FHitResult Hit);
+	virtual void HitEffect_Implementation(class UNiagaraSystem* WantEffect, FHitResult Hit);
 };
