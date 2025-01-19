@@ -10,6 +10,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+
+#include "GameFramework/PawnMovementComponent.h"
+
 #include "Net/UnrealNetwork.h"
 
 #include "Engine/DamageEvents.h"
@@ -66,10 +69,21 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	//		_SimulatedOrPhysics	: 시뮬레이션 용 또는 물리 객체
 	//		_InitialOrOwner		: 처음 한 번, Owner는 계속
 	//		_Custom				: SetCustomActiveOverride 이거를 키거나 끄면서 조절
-	DOREPLIFETIME_CONDITION(APlayerCharacter, LastReplicatedMoveDirection, COND_OwnerOnly);
+	//DOREPLIFETIME_CONDITION(APlayerCharacter, LastReplicatedMoveDirection, COND_OwnerOnly);
 	
 	// 조건 없이도 가능
-	// DOREPLIFETIME(APlayerCharacter, LastReplicatedMoveDirection);
+	DOREPLIFETIME(APlayerCharacter, CurrentHP);
+	DOREPLIFETIME(APlayerCharacter, MaxHP);
+}
+
+//void APlayerCharacter::OnMoveRep()
+//{
+//	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("%d"), LastReplicatedMoveDirection.Length()));
+//}
+
+void APlayerCharacter::OnHPRep()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("%f"), CurrentHP));
 }
 
 // Called when the game starts or when spawned
@@ -90,7 +104,7 @@ void APlayerCharacter::BeginPlay()
 	{
 		ChangeWeapon(SubWeapon);
 	}
-	
+	//CurrentHP = 100;
 }
 
 // 서버에서 해당 캐릭터에 새로운 컨트롤러를 부여했을 때
@@ -163,6 +177,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	LastReplicatedMoveDirection = GetMovementComponent()->Velocity;
 }
 
 // Called to bind functionality to input
@@ -326,7 +341,8 @@ float APlayerCharacter::InternalTakePointDamage(float Damage, struct FPointDamag
 
 	if (PointDamageEvent.HitInfo.BoneName == TEXT("HEAD")) Damage *= 2;
 
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Damage : %f"), Damage));
+	CurrentHP -= Damage;
+	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("HP : %f"), CurrentHP));
 	
 
 	return result;

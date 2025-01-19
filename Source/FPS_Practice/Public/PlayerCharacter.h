@@ -39,14 +39,25 @@ protected:
 	//										언리얼에서는 배열 <> 이렇게(리스트)
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps ) const override;
 	// 모두가 똑같은 값을 복제해서 사용하는 멀티플레이어 용도의 변수
-	UPROPERTY(Replicated)
+	// Replicated : 그냥 변수를 동기화 하는 것 only
+	// ReplicatedUsing : 변수를 동기화 할 때 함수가 돌아간다.
+	UPROPERTY(BlueprintReadOnly, /*ReplicatedUsing = OnMoveRep,*/ Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	FVector LastReplicatedMoveDirection;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnHPRep, Category = "Status", meta = (AllowPrivateAccess = "true"))
+	float CurrentHP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnHPRep, Category = "Status", meta = (AllowPrivateAccess = "true"))
+	float MaxHP;
 
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
 protected:
+	UFUNCTION()
+	//virtual void OnMoveRep();
+	virtual void OnHPRep();
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;
