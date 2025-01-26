@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "MyGameInstance.h"
 #include "WeaponComponent.h"
+#include "MyGameInstance.h"
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.h"
 #include "Components/PrimitiveComponent.h"

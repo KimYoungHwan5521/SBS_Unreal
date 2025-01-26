@@ -7,6 +7,8 @@
 #include "MainWeaponComponent.h"
 #include "SubWeaponComponent.h"
 
+#include "Widgets/FPSInGameWidget.h"
+
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -83,7 +85,11 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 void APlayerCharacter::OnHPRep()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("%f"), CurrentHP));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("%f"), CurrentHP));
+	if (IsValid(InGameWidgetInstance))
+	{
+		OnHealthChange.Broadcast(CurrentHP, MaxHP);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -105,6 +111,23 @@ void APlayerCharacter::BeginPlay()
 		ChangeWeapon(SubWeapon);
 	}
 	//CurrentHP = 100;
+
+	if (AController* MyController = GetController())
+	{
+		if (MyController->IsLocalPlayerController())
+		{
+			InGameWidgetInstance = CreateWidget<UFPSInGameWidget>(GetWorld(), InGameWidgetClass);
+			if (IsValid(InGameWidgetInstance))
+			{
+				// AddToPlayerScreen : 플레이어 화면에 띄우기
+				// AddToViewport : 화면에 띄우기
+				InGameWidgetInstance->AddToPlayerScreen();
+				OnHealthChange.AddDynamic(InGameWidgetInstance, &UFPSInGameWidget::ShowHealth);
+				OnHealthChange.Broadcast(CurrentHP, MaxHP);
+			}
+		}
+	}
+
 }
 
 // 서버에서 해당 캐릭터에 새로운 컨트롤러를 부여했을 때

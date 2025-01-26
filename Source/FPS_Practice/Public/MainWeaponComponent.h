@@ -35,4 +35,5 @@ public:
 	virtual void Reload_Implementation() override;
 	virtual void Shot_Implementation(FVector CameraLocation, FVector ShotLocation) override;
 	virtual void Hidden_Implementation(bool bIsHidden) override;
+
 };

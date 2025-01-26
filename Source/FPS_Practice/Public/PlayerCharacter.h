@@ -6,10 +6,19 @@
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHealthChange, float, CurrentHPf, float, MaxHPf);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAmmoChange, int, CurrentAmmof, int, MaxAmmof);
+
 UCLASS()
 class FPS_PRACTICE_API APlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
+
+protected:
+	//							블루프린트 이벤트도 등록 가능
+	UPROPERTY(BlueprintReadOnly, BlueprintAssignable, Category="Status")
+	FHealthChange OnHealthChange;
+	FAmmoChange OnAmmoChange;
 
 private:
 	// meta : 메타데이터 추가 Allow Private Access : 프라이빗에 접근 가능하게 언리얼에게 오픈!
@@ -33,6 +42,12 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"));
 	TObjectPtr<class UWeaponComponent> OldWeapon = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UFPSInGameWidget> InGameWidgetInstance = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"));
+	TSubclassOf<class UFPSInGameWidget> InGameWidgetClass = nullptr;
 
 protected:
 	// 변수를 리플리케이트 받을 수 있는 함수를 준비
@@ -124,4 +139,5 @@ public:
 
 protected:
 	virtual float InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
 };
