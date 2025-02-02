@@ -88,7 +88,7 @@ void APlayerCharacter::OnHPRep()
 	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("%f"), CurrentHP));
 	if (IsValid(InGameWidgetInstance))
 	{
-		OnHealthChange.Broadcast(CurrentHP, MaxHP);
+		OnHealthChanged.Broadcast(CurrentHP, MaxHP);
 	}
 }
 
@@ -122,8 +122,8 @@ void APlayerCharacter::BeginPlay()
 				// AddToPlayerScreen : 플레이어 화면에 띄우기
 				// AddToViewport : 화면에 띄우기
 				InGameWidgetInstance->AddToPlayerScreen();
-				OnHealthChange.AddDynamic(InGameWidgetInstance, &UFPSInGameWidget::ShowHealth);
-				OnHealthChange.Broadcast(CurrentHP, MaxHP);
+				OnHealthChanged.AddDynamic(InGameWidgetInstance, &UFPSInGameWidget::ShowHealth);
+				OnHealthChanged.Broadcast(CurrentHP, MaxHP);
 			}
 		}
 	}
@@ -361,12 +361,46 @@ bool APlayerCharacter::ChangeWeapon_Implementation(UWeaponComponent* newWeapon)
 float APlayerCharacter::InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
 	float result = Super::InternalTakePointDamage(Damage, PointDamageEvent, EventInstigator, DamageCauser);
+	bool bIsCritical = false;
 
-	if (PointDamageEvent.HitInfo.BoneName == TEXT("HEAD")) Damage *= 2;
+	if (PointDamageEvent.HitInfo.BoneName == TEXT("HEAD"))
+	{
+		Damage *= 2;
+		bIsCritical = true;
+	}
 
 	CurrentHP -= Damage;
 	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("HP : %f"), CurrentHP));
-	
+	OnHealthChanged.Broadcast(CurrentHP, MaxHP);
+
+	if (APlayerController* AsPlayer = Cast<APlayerController>(EventInstigator))
+	{
+		if (AsPlayer->GetCharacter())
+		{
+			if (APlayerCharacter* AsPlayerCharacter = Cast<APlayerCharacter>(AsPlayer->GetCharacter()))
+			{
+				AsPlayerCharacter->HitTrigger(PointDamageEvent.HitInfo.Location, Damage, bIsCritical, CurrentHP <= 0);
+
+			}
+		}
+	}
+	DamageTrigger(PointDamageEvent.HitInfo.Location, Damage, bIsCritical, CurrentHP <= 0);
 
 	return result;
+}
+
+void APlayerCharacter::HitTrigger_Implementation(FVector HitLocation, float Damage, bool bIsCritical, bool bIsDead)
+{
+	if (IsValid(InGameWidgetInstance))
+	{
+		InGameWidgetInstance->HitAnimation(bIsCritical);
+	}
+}
+
+void APlayerCharacter::DamageTrigger_Implementation(FVector HitLocation, float Damage, bool bIsCritical, bool bIsDead)
+{
+	if (IsValid(InGameWidgetInstance))
+	{
+		InGameWidgetInstance->DamageAnimation(bIsCritical, HitLocation);
+	}
 }

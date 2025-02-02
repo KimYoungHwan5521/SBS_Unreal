@@ -17,7 +17,7 @@ class FPS_PRACTICE_API APlayerCharacter : public ACharacter
 protected:
 	//							블루프린트 이벤트도 등록 가능
 	UPROPERTY(BlueprintReadOnly, BlueprintAssignable, Category="Status")
-	FHealthChange OnHealthChange;
+	FHealthChange OnHealthChanged;
 	FAmmoChange OnAmmoChange;
 
 private:
@@ -136,6 +136,14 @@ public:
 	bool ChangeWeapon(class UWeaponComponent* newWeapon);
 	//						_Implementation : 블프에서 오버라이드 하지 않으면 이 함수 실행
 	virtual bool ChangeWeapon_Implementation(class UWeaponComponent* newWeapon);
+
+	UFUNCTION(Client, Unreliable, Category = "Animation")
+	void HitTrigger(FVector HitLocation, float Damage, bool bIsCritical, bool bIsDead);
+	virtual void HitTrigger_Implementation(FVector HitLocation, float Damage, bool bIsCritical, bool bIsDead);
+
+	UFUNCTION(Client, Unreliable, Category = "Animation")
+	void DamageTrigger(FVector HitLocation, float Damage, bool bIsCritical, bool bIsDead);
+	virtual void DamageTrigger_Implementation(FVector HitLocation, float Damage, bool bIsCritical, bool bIsDead);
 
 protected:
 	virtual float InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;

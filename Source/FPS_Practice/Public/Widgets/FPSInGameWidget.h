@@ -14,6 +14,15 @@ UCLASS()
 class FPS_PRACTICE_API UFPSInGameWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
+protected:
+	// Transient : 임시 변수 -> 직렬화 해제
+	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim, AllowPrivateAccess = "true"))
+	TObjectPtr<UWidgetAnimation> Anim_EnemyHit;
+	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim, AllowPrivateAccess = "true"))
+	TObjectPtr<UWidgetAnimation> Anim_EnemyHit_Critical;
+	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim, AllowPrivateAccess = "true"))
+	TObjectPtr<UWidgetAnimation> Anim_Be_Hit;
 	
 protected:
 	// 이 위젯은 실제 위젯에 연결되어있음
@@ -35,6 +44,13 @@ protected:
 	TObjectPtr<class UTextBlock> MagazineCapacity;
 
 public:
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
+	void HitAnimation(bool bIsCritical);
+	virtual void HitAnimation_Implementation(bool bIsCritical);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
+	void DamageAnimation(bool bIsCritical, FVector Direction);
+	virtual void DamageAnimation_Implementation(bool bIsCritical, FVector Direction);
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Status")
 	void ShowHealth(float CurrentHPf, float MaxHPf);
 	virtual void ShowHealth_Implementation(float CurrentHPf, float MaxHPf);

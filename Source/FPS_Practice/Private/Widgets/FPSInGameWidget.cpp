@@ -29,3 +29,13 @@ void UFPSInGameWidget::ShowGunName_Implementation(const FText& NewName)
 {
 	WeaponName->SetText(NewName);
 }
+
+void UFPSInGameWidget::HitAnimation_Implementation(bool bIsCritical)
+{
+	PlayAnimation(bIsCritical ? Anim_EnemyHit_Critical : Anim_EnemyHit, 0);
+}
+
+void UFPSInGameWidget::DamageAnimation_Implementation(bool bIsCritical, FVector Direction)
+{
+	PlayAnimation(bIsCritical ? Anim_Be_Hit : Anim_Be_Hit, 0);
+}
