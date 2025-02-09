@@ -38,4 +38,5 @@ void UFPSInGameWidget::HitAnimation_Implementation(bool bIsCritical)
 void UFPSInGameWidget::DamageAnimation_Implementation(bool bIsCritical, FVector Direction)
 {
 	PlayAnimation(bIsCritical ? Anim_Be_Hit : Anim_Be_Hit, 0);
+	DamageDirection = Direction;
 }

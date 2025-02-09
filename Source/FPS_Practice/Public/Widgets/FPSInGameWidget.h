@@ -16,6 +16,10 @@ class FPS_PRACTICE_API UFPSInGameWidget : public UUserWidget
 	GENERATED_BODY()
 
 protected:
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	FVector DamageDirection;
+
+protected:
 	// Transient : 임시 변수 -> 직렬화 해제
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim, AllowPrivateAccess = "true"))
 	TObjectPtr<UWidgetAnimation> Anim_EnemyHit;
