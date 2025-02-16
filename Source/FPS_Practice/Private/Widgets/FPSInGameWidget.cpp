@@ -2,9 +2,13 @@
 
 
 #include "Widgets/FPSInGameWidget.h"
+#include "Widgets/KillLogWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+
+#include "Components/VerticalBox.h"
+#include "Components/VerticalBoxSlot.h"
 
 
 void UFPSInGameWidget::ShowHealth_Implementation(float CurrentHPf, float MaxHPf)
@@ -30,13 +34,26 @@ void UFPSInGameWidget::ShowGunName_Implementation(const FText& NewName)
 	WeaponName->SetText(NewName);
 }
 
-void UFPSInGameWidget::HitAnimation_Implementation(bool bIsCritical)
+void UFPSInGameWidget::HitAnimation_Implementation(bool bIsCritical, bool bIsDead)
 {
 	PlayAnimation(bIsCritical ? Anim_EnemyHit_Critical : Anim_EnemyHit, 0);
+	if (bIsDead)
+	{
+		ShowKillLog(FText::FromString(L"나"), FText::FromString(L"저기 있는 누군가"));
+	}
 }
 
 void UFPSInGameWidget::DamageAnimation_Implementation(bool bIsCritical, FVector Direction)
 {
 	PlayAnimation(bIsCritical ? Anim_Be_Hit : Anim_Be_Hit, 0);
 	DamageDirection = Direction;
+}
+
+void UFPSInGameWidget::ShowKillLog_Implementation(const FText& KillerName, const FText& VictimName)
+{
+	UKillLogWidget* CreatedKillLog = CreateWidget<UKillLogWidget>(GetWorld(), KillLogClass);
+	if (UVerticalBoxSlot* AsSlot = VB_Kill_Log->AddChildToVerticalBox(CreatedKillLog))
+	{
+		AsSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
+	}
 }

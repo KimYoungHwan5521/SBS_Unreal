@@ -19,6 +19,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	FVector DamageDirection;
 
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UKillLogWidget> KillLogClass;
+
 protected:
 	// Transient : 임시 변수 -> 직렬화 해제
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim, AllowPrivateAccess = "true"))
@@ -46,14 +49,20 @@ protected:
 	TObjectPtr<class UTextBlock> CurrentMagazine;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, AllowPrivateAccess = "true"))
 	TObjectPtr<class UTextBlock> MagazineCapacity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, AllowPrivateAccess = "true"))
+	TObjectPtr<class UVerticalBox> VB_Kill_Log;
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
-	void HitAnimation(bool bIsCritical);
-	virtual void HitAnimation_Implementation(bool bIsCritical);
+	void HitAnimation(bool bIsCritical, bool bIsDead);
+	virtual void HitAnimation_Implementation(bool bIsCritical, bool bIsDead);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	void DamageAnimation(bool bIsCritical, FVector Direction);
 	virtual void DamageAnimation_Implementation(bool bIsCritical, FVector Direction);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "KillLog")
+	void ShowKillLog(const FText& KillerName, const FText& VictimName);
+	virtual void ShowKillLog_Implementation(const FText& KillerName, const FText& VictimName);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Status")
 	void ShowHealth(float CurrentHPf, float MaxHPf);

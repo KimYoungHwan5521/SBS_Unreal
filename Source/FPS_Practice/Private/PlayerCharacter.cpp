@@ -384,7 +384,13 @@ float APlayerCharacter::InternalTakePointDamage(float Damage, struct FPointDamag
 			}
 		}
 	}
-	DamageTrigger(PointDamageEvent.HitInfo.Location, Damage, bIsCritical, CurrentHP <= 0);
+	FVector DamageDirection = FVector::ZeroVector;
+	if (IsValid(DamageCauser))
+	{
+		DamageDirection = DamageCauser->GetActorLocation() - GetActorLocation();
+		DamageDirection.GetSafeNormal2D();
+	}
+	DamageTrigger(DamageDirection, Damage, bIsCritical, CurrentHP <= 0);
 
 	return result;
 }
@@ -393,7 +399,7 @@ void APlayerCharacter::HitTrigger_Implementation(FVector HitLocation, float Dama
 {
 	if (IsValid(InGameWidgetInstance))
 	{
-		InGameWidgetInstance->HitAnimation(bIsCritical);
+		InGameWidgetInstance->HitAnimation(bIsCritical, bIsDead);
 	}
 }
 
