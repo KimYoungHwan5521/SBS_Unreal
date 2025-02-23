@@ -13,6 +13,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 
+#include "Kismet/GamePlayStatics.h"
+
 #include "GameFramework/PawnMovementComponent.h"
 
 #include "Net/UnrealNetwork.h"
@@ -76,6 +78,7 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	// 조건 없이도 가능
 	DOREPLIFETIME(APlayerCharacter, CurrentHP);
 	DOREPLIFETIME(APlayerCharacter, MaxHP);
+	DOREPLIFETIME(APlayerCharacter, CharacterName);
 }
 
 //void APlayerCharacter::OnMoveRep()
@@ -91,6 +94,7 @@ void APlayerCharacter::OnHPRep()
 		OnHealthChanged.Broadcast(CurrentHP, MaxHP);
 	}
 }
+
 
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
@@ -390,7 +394,9 @@ float APlayerCharacter::InternalTakePointDamage(float Damage, struct FPointDamag
 		DamageDirection = DamageCauser->GetActorLocation() - GetActorLocation();
 		DamageDirection.GetSafeNormal2D();
 	}
-	DamageTrigger(DamageDirection, Damage, bIsCritical, CurrentHP <= 0);
+	bool bIsDead = CurrentHP <= 0;
+	DamageTrigger(DamageDirection, Damage, bIsCritical, bIsDead);
+	if (bIsDead) KillNotify(Cast<APlayerCharacter>(DamageCauser), this);
 
 	return result;
 }
@@ -409,4 +415,18 @@ void APlayerCharacter::DamageTrigger_Implementation(FVector HitLocation, float D
 	{
 		InGameWidgetInstance->DamageAnimation(bIsCritical, HitLocation);
 	}
+}
+
+
+void APlayerCharacter::KillNotify_Implementation(APlayerCharacter* DamageCauser, APlayerCharacter* Victim)
+{
+	if (APlayerCharacter* LocalCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
+	{
+		UFPSInGameWidget* LocalWidget = LocalCharacter->InGameWidgetInstance;
+		if (IsValid(LocalWidget) && IsValid(DamageCauser) && IsValid(Victim))
+		{
+			LocalWidget->ShowKillLog(DamageCauser->CharacterName, Victim->CharacterName);
+		}
+	}
+
 }

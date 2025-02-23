@@ -18,6 +18,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim, AllowPrivateAccess = "true"))
 	TObjectPtr<UWidgetAnimation> KillLogAnimation;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (BindWidget, AllowPrivateAccess = "true"))
+	TObjectPtr<class UTextBlock> Kill_Display;
+
 	FWidgetAnimationDynamicEvent EndEvent;
 
 protected:
@@ -28,4 +31,7 @@ protected:
 public:
 	UFUNCTION()
 	void RemoveKillLog() { RemoveFromParent(); }
+
+	UFUNCTION(BlueprintCallable, Category = "Log")
+	void BindName(const FText& KillerName, const FText& VictimName);
 };

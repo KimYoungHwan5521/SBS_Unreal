@@ -77,8 +77,8 @@ public:
 	virtual void ShowPortrait_Implementation(const FSlateBrush& WantBrush);
 
 	// FString : 맘대로 바꿀 수 있는 진짜 글자
-	// FText : UI에 표시하기 위한 글자
-	// FName : 검색을 위한 글자
+	// FText : UI에 표시하기 위한 글자, 현지화 가능
+	// FName : 검색을 위한 글자 (못바꿈)
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Status")
 	void ShowGunName(const FText& NewName);
 	virtual void ShowGunName_Implementation(const FText& NewName);

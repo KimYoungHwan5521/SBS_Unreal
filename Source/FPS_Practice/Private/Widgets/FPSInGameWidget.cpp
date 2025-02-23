@@ -37,10 +37,6 @@ void UFPSInGameWidget::ShowGunName_Implementation(const FText& NewName)
 void UFPSInGameWidget::HitAnimation_Implementation(bool bIsCritical, bool bIsDead)
 {
 	PlayAnimation(bIsCritical ? Anim_EnemyHit_Critical : Anim_EnemyHit, 0);
-	if (bIsDead)
-	{
-		ShowKillLog(FText::FromString(L"나"), FText::FromString(L"저기 있는 누군가"));
-	}
 }
 
 void UFPSInGameWidget::DamageAnimation_Implementation(bool bIsCritical, FVector Direction)
@@ -51,9 +47,12 @@ void UFPSInGameWidget::DamageAnimation_Implementation(bool bIsCritical, FVector 
 
 void UFPSInGameWidget::ShowKillLog_Implementation(const FText& KillerName, const FText& VictimName)
 {
-	UKillLogWidget* CreatedKillLog = CreateWidget<UKillLogWidget>(GetWorld(), KillLogClass);
-	if (UVerticalBoxSlot* AsSlot = VB_Kill_Log->AddChildToVerticalBox(CreatedKillLog))
+	if (UKillLogWidget* CreatedKillLog = CreateWidget<UKillLogWidget>(GetWorld(), KillLogClass))
 	{
-		AsSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
+		if (UVerticalBoxSlot* AsSlot = VB_Kill_Log->AddChildToVerticalBox(CreatedKillLog))
+		{
+			AsSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
+		}
+		CreatedKillLog->BindName(KillerName, VictimName);
 	}
 }

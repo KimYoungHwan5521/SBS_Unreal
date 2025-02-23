@@ -14,6 +14,10 @@ class FPS_PRACTICE_API APlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Status")
+	FText CharacterName;
+
 protected:
 	//							블루프린트 이벤트도 등록 가능
 	UPROPERTY(BlueprintReadOnly, BlueprintAssignable, Category="Status")
@@ -144,6 +148,10 @@ public:
 	UFUNCTION(Client, Unreliable, Category = "Animation")
 	void DamageTrigger(FVector HitLocation, float Damage, bool bIsCritical, bool bIsDead);
 	virtual void DamageTrigger_Implementation(FVector HitLocation, float Damage, bool bIsCritical, bool bIsDead);
+
+	UFUNCTION(NetMulticast, Reliable, Category = "Score")
+	void KillNotify(APlayerCharacter* DamageCauser, APlayerCharacter* Victim);
+	void KillNotify_Implementation(APlayerCharacter* DamageCauser, APlayerCharacter* Victim);
 
 protected:
 	virtual float InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;

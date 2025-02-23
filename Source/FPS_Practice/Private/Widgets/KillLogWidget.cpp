@@ -4,6 +4,8 @@
 #include "Widgets/KillLogWidget.h"
 #include "Animation/WidgetAnimation.h"
 
+#include "Components/TextBlock.h"
+
 void UKillLogWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -13,4 +15,11 @@ void UKillLogWidget::NativeConstruct()
 	BindToAnimationFinished(KillLogAnimation, EndEvent);
 	
 	PlayAnimation(KillLogAnimation);
+}
+
+
+void UKillLogWidget::BindName(const FText& KillerName, const FText& VictimName)
+{
+	FString CombinedString = KillerName.ToString() + TEXT(" has killed ") + VictimName.ToString();
+	Kill_Display->SetText(FText::FromString(CombinedString));
 }
