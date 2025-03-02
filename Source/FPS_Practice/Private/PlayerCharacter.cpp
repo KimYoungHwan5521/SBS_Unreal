@@ -116,9 +116,9 @@ void APlayerCharacter::BeginPlay()
 	}
 	//CurrentHP = 100;
 
-	if (AController* MyController = GetController())
+	if (AController* AsController = GetController())
 	{
-		if (MyController->IsLocalPlayerController())
+		if (AsController->IsLocalPlayerController())
 		{
 			InGameWidgetInstance = CreateWidget<UFPSInGameWidget>(GetWorld(), InGameWidgetClass);
 			if (IsValid(InGameWidgetInstance))
@@ -212,8 +212,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	MyController = Cast<AFPSController>(Controller);
+
 	// 새 컨트롤러 소환
-	if (AFPSController* asFPSController = Cast<AFPSController>(Controller))
+	if (IsValid(MyController))
 	{
 		// InputComponent 하위에 EnhancedInputComponent가 있다.
 		if (UEnhancedInputComponent* asEnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
@@ -224,21 +226,65 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 			//															Triggered : 발동 됨
 			//															Canceled : 트리거 되기 전에 뗌
 			//															Completed : 트리거 된 후에 뗌
-			asEnhancedInputComponent->BindAction(asFPSController->IA_Look, ETriggerEvent::Triggered, this, &APlayerCharacter::OnLook);
-			asEnhancedInputComponent->BindAction(asFPSController->IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter::OnMove);
-			asEnhancedInputComponent->BindAction(asFPSController->IA_Run, ETriggerEvent::Started, this, &APlayerCharacter::OnRun);
-			asEnhancedInputComponent->BindAction(asFPSController->IA_Run, ETriggerEvent::Completed, this, &APlayerCharacter::OnRun);
-			asEnhancedInputComponent->BindAction(asFPSController->IA_Jump, ETriggerEvent::Started, this, &APlayerCharacter::OnJump);
-			asEnhancedInputComponent->BindAction(asFPSController->IA_Jump, ETriggerEvent::Completed, this, &APlayerCharacter::StopJumping);
-			asEnhancedInputComponent->BindAction(asFPSController->IA_Shot, ETriggerEvent::Started, this, &APlayerCharacter::OnShot);
-			asEnhancedInputComponent->BindAction(asFPSController->IA_Reload, ETriggerEvent::Triggered, this, &APlayerCharacter::OnReload);
-			asEnhancedInputComponent->BindAction(asFPSController->IA_MainWeapon, ETriggerEvent::Triggered, this, &APlayerCharacter::OnMainWeapon);
-			asEnhancedInputComponent->BindAction(asFPSController->IA_SubWeapon, ETriggerEvent::Triggered, this, &APlayerCharacter::OnSubWeapon);
-			asEnhancedInputComponent->BindAction(asFPSController->IA_Interaction, ETriggerEvent::Triggered, this, &APlayerCharacter::OnInteraction);
+			asEnhancedInputComponent->BindAction(MyController->IA_Look, ETriggerEvent::Triggered, this, &APlayerCharacter::OnLook);
+			asEnhancedInputComponent->BindAction(MyController->IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter::OnMove);
+			asEnhancedInputComponent->BindAction(MyController->IA_Run, ETriggerEvent::Started, this, &APlayerCharacter::OnRun);
+			asEnhancedInputComponent->BindAction(MyController->IA_Run, ETriggerEvent::Completed, this, &APlayerCharacter::OnRun);
+			asEnhancedInputComponent->BindAction(MyController->IA_Jump, ETriggerEvent::Started, this, &APlayerCharacter::OnJump);
+			asEnhancedInputComponent->BindAction(MyController->IA_Jump, ETriggerEvent::Completed, this, &APlayerCharacter::StopJumping);
+			asEnhancedInputComponent->BindAction(MyController->IA_Shot, ETriggerEvent::Started, this, &APlayerCharacter::OnShot);
+			asEnhancedInputComponent->BindAction(MyController->IA_Reload, ETriggerEvent::Triggered, this, &APlayerCharacter::OnReload);
+			asEnhancedInputComponent->BindAction(MyController->IA_MainWeapon, ETriggerEvent::Triggered, this, &APlayerCharacter::OnMainWeapon);
+			asEnhancedInputComponent->BindAction(MyController->IA_SubWeapon, ETriggerEvent::Triggered, this, &APlayerCharacter::OnSubWeapon);
+			asEnhancedInputComponent->BindAction(MyController->IA_Interaction, ETriggerEvent::Triggered, this, &APlayerCharacter::OnInteraction);
 		}
 	}
-
 }
+
+void APlayerCharacter::ClearPlayerInputComponent_Implementation()
+{
+	if (IsValid(MyController))
+	{
+		if (UEnhancedInputComponent* asEnhancedInputComponent = MyController->FindComponentByClass<UEnhancedInputComponent>())
+		{
+			asEnhancedInputComponent->ClearActionBindings();
+		}
+		// SetInputMode : 입력모드
+		// Game
+		// UI
+		// Game & UI
+
+		/* enum EMouseLockMode :
+		* {
+		* DoNotLock,
+		* LockOnCapture,	//마우스가 눌려있는동안 잠금
+		* LockAlways,
+		* LockInFullScreen,
+		* }
+		*/
+		FInputModeUIOnly NewInputMode;
+		NewInputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		MyController->SetInputMode(NewInputMode);
+		MyController->SetShowMouseCursor(true);
+
+	}
+	GetWorldTimerManager().SetTimer(RespawnTimerHandler, this, &APlayerCharacter::Respawn, 3.0f);
+	PlayAnimMontage(DeathMontage);
+}
+
+void APlayerCharacter::Respawn()
+{
+	if (IsValid(MyController))
+	{
+		FInputModeGameOnly NewInputMode;
+		MyController->SetInputMode(NewInputMode);
+		MyController->SetShowMouseCursor(false);
+	}
+	CurrentHP = MaxHP;
+	OnHealthChanged.Broadcast(CurrentHP, MaxHP);
+	StopAnimMontage();
+}
+
 void APlayerCharacter::OnLook(const FInputActionValue& Value)
 {
 	FVector2D InputVector = Value.Get<FVector2D>();
@@ -364,6 +410,7 @@ bool APlayerCharacter::ChangeWeapon_Implementation(UWeaponComponent* newWeapon)
 
 float APlayerCharacter::InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
+	if (CurrentHP <= 0) return 0;
 	float result = Super::InternalTakePointDamage(Damage, PointDamageEvent, EventInstigator, DamageCauser);
 	bool bIsCritical = false;
 
@@ -396,9 +443,20 @@ float APlayerCharacter::InternalTakePointDamage(float Damage, struct FPointDamag
 	}
 	bool bIsDead = CurrentHP <= 0;
 	DamageTrigger(DamageDirection, Damage, bIsCritical, bIsDead);
-	if (bIsDead) KillNotify(Cast<APlayerCharacter>(DamageCauser), this);
+	if (bIsDead)
+	{
+		PlayAnimMontage(DeathMontage);
+		AnimationMulticast(DeathMontage);
+		KillNotify(Cast<APlayerCharacter>(DamageCauser), this);
+		ClearPlayerInputComponent();
+	}
 
 	return result;
+}
+
+void APlayerCharacter::AnimationMulticast_Implementation(UAnimMontage* TargetMontage)
+{
+	PlayAnimMontage(TargetMontage);
 }
 
 void APlayerCharacter::HitTrigger_Implementation(FVector HitLocation, float Damage, bool bIsCritical, bool bIsDead)

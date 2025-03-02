@@ -30,6 +30,10 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess = "true"))
  	TObjectPtr<class UCameraComponent> MainCamera;
 
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Controller", meta = (AllowPrivateAceess = "true"))
+	TObjectPtr<class AFPSController> MyController;
+
 	// StaticMeshComponent -> 뼈대가 없음 -> 중앙선이 민트색
 	// SkeletalMeshComponent -> 뼈대가 있음 -> 중앙선이 핑크색
 	// 이 두 개를 사용할 수 있게 -> UPrimitiveComponent : 실제 세상에서 메시를 렌더하는 컴포넌트
@@ -53,6 +57,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"));
 	TSubclassOf<class UFPSInGameWidget> InGameWidgetClass = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UAnimMontage> DeathMontage = nullptr;
+
 protected:
 	// 변수를 리플리케이트 받을 수 있는 함수를 준비
 	//										언리얼에서는 배열 <> 이렇게(리스트)
@@ -67,6 +74,8 @@ protected:
 	float CurrentHP;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnHPRep, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float MaxHP;
+
+	FTimerHandle RespawnTimerHandler;
 
 public:
 	// Sets default values for this character's properties
@@ -91,6 +100,7 @@ protected:
 
 	UFUNCTION()
 	virtual void EndDrawAnim(UAnimMontage* AnimMontage, bool bInterrupted);
+	
 	UFUNCTION()
 	virtual void OnDrawNotify(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointNotifyPayload);
 
@@ -100,6 +110,10 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+	UFUNCTION(NetMulticast, Reliable, Category = "Controller")
+	void ClearPlayerInputComponent();
+	virtual void ClearPlayerInputComponent_Implementation();
 
 protected:
 	UFUNCTION()
@@ -156,4 +170,10 @@ public:
 protected:
 	virtual float InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION(NetMulticast, Reliable, Category = "Animation")
+	void AnimationMulticast(UAnimMontage* TargetMontage);
+	virtual void AnimationMulticast_Implementation(UAnimMontage* TargetMontage);
+
+	UFUNCTION()
+	virtual void Respawn();
 };
